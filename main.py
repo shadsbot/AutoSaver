@@ -29,13 +29,14 @@ if not os.path.isfile(configfile):
         f.write("duration = 10") # how long the toast stays up for
 parser.read(configfile)
 # Globals are bad, mmkay
-global INTERVAL, TRAYICON, TOASTICON, PROGRAM, DURATION, shell, icon, cont, configfile
+global INTERVAL, TRAYICON, TOASTICON, PROGRAM, DURATION, shell, icon, cont, configfile, state
 INTERVAL = float(parser.get('config','interval'))
 TRAYICON = parser.get('config','trayicon')
 TOASTICON = parser.get('config','toasticon')
 PROGRAM = parser.get('config', 'deftitle')
 DURATION = float(parser.get('config','duration'))
 cont = True
+state = False
 print "Debug: %s %s %s %s %s" % (INTERVAL,TRAYICON,TOASTICON,PROGRAM,DURATION)
 
 shell = win32com.client.Dispatch("WScript.Shell")
@@ -108,8 +109,8 @@ def settingswindow():
 
 settingswindow()
 
-def actual_prog():      
-    while cont:
+def actual_prog(self):    
+    while self.running:
         while state:
             time.sleep(INTERVAL)
             current_window = GetWindowText(GetForegroundWindow())
@@ -118,9 +119,10 @@ def actual_prog():
                 toaster.show_toast(
                     "Autosaving in 10s",
                     "%s" % current_window, icon_path=TOASTICON, duration=DURATION)
-                shell.AppActivate(current_window)
-                shell.SendKeys("^s")
+                keystrokes(current_window)
+
         time.sleep(5) # There's gonna be a five second delay after saving config settings and it actually taking effect but whatever
+
 def show_settings():
     return True
     
@@ -128,9 +130,12 @@ class prog_thread (threading.Thread):
     def __init__(self, threadID):
         threading.Thread.__init__(self)
         self.threadID = threadID
+        self.running = True
     def run(self):
         print "Starting thread %s" % self.threadID
-        actual_prog()
+        actual_prog(self)
+    def stop():
+        self.running = False
 
 class settings_thread (threading.Thread):
     def __init__(self, threadID):
@@ -144,11 +149,14 @@ class settings_thread (threading.Thread):
 print "Starting thread"
 thread1 = prog_thread(1)
 threadSettings = prog_thread(2)
+thread1.setDaemon(True)
 thread1.start()
 print "Thread started"
-
 # System tray
 state = True
+def keystrokes(current_window):
+    shell.AppActivate(current_window)
+    shell.SendKeys("^s")
 def on_clicked(icon, item):
     global state 
     state = not item.checked
@@ -157,7 +165,10 @@ def open_settings():
     main.deiconify()
 def exit_prog():
     icon.stop()
-    cont = False
+    state = False
+    thread1.stop()
+    thread1.join()
+    sys.exit(0)
 
 icon = pystray.Icon("AutoSave", PIL.Image.open(TRAYICON), "AutoSave", menu=pystray.Menu(
     pystray.MenuItem("Enable", on_clicked,checked=lambda item: state),
