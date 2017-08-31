@@ -15,5 +15,9 @@ It won't autosave a particular artboard that you've left up in the background...
 ## Customizing? Sure, why not
 This program is licensed under the MIT license, so have fun. Also, you can specify the icons that are used in the sys tray and the toast notification. Toast notification has to be a .ico, sys tray can be png or jpg or ico (I think?).
 
+__Technicals__
+
+If you're going to be editing the code for this at all, you'll need `win10toast` and `pystray` for Python 2.7.
+
 ## Known bugs
 If you've got the mouse held down during an autosave period, it may not save. I think this is a restriction of the `win32com.cient` lib. I'll keep looking for a fix but uh, no promises.
