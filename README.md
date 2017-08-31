@@ -4,6 +4,9 @@ _Compatability companion program for applications that don't support autosave_
 ## How to Use
 Double click the app, it will create a config file in `%TEMP%\autosave_prog.ini`. Feel free to edit these settings to better fit your preferences. The program is preset for Clip Studio, but basically that field is looking to see if what you put in there is in the currently active window title. It doesn't have to be an exact match, it just has to contain it.
 
+
+_You must set a tray icon or it will spit out an error._
+
 ## What this program will do
 Every X seconds, it will send the `CTRL-S` key presses if the specified program is in the foreground. If you're in a tabbed program like Paint Clip Studio or Notepad++ or Visual Studio Code or PhotoShop, it will save the __active tab at that time__.
 
